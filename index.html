@@ -1,0 +1,856 @@
+<!doctype html>
+<html lang="mn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Далд утгыг таамаглаж, тайлбарлая</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Philosopher:wght@400;700&family=Noto+Sans:wght@400;500;700;800&display=swap">
+<style>
+:root{
+  --tdd:#071f21; --td:#0c3537; --t:#145456; --tl:#1f7774; --tsoft:#d7ece8;
+  --red:#a3202a; --redd:#721219; --redl:#c8414a;
+  --gold:#d9a93a; --goldl:#f3d27a; --goldd:#9a711c;
+  --parch:#f8eed6; --parchd:#ecdcb4; --ink:#2a1a10; --muted:#6b5640;
+  --ok:#24804d; --oksoft:#dcf2e3; --no:#b8322a; --nosoft:#fbe2df;
+  --shadow:0 10px 26px rgba(0,0,0,.35);
+  --hfont:"Philosopher","Noto Sans",Georgia,serif;
+  --meander:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='12'%3E%3Cpath d='M0 11H5V1H15V8H9V5H12M15 8V11H20' fill='none' stroke='%23d9a93a' stroke-width='1.6'/%3E%3C/svg%3E");
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%}
+body{color:var(--ink);font-family:"Noto Sans","Segoe UI",system-ui,sans-serif;font-size:20px;line-height:1.4;overflow:hidden;
+  background-color:var(--td);
+  background-image:radial-gradient(ellipse at 50% 35%,rgba(31,119,116,.55),transparent 65%),
+   url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='60' height='60'%3E%3Cg fill='none' stroke='%23d9a93a' stroke-opacity='.09' stroke-width='1.5'%3E%3Cpath d='M30 6L54 30L30 54L6 30Z'/%3E%3Ccircle cx='30' cy='30' r='6'/%3E%3C/g%3E%3C/svg%3E")}
+button{font:inherit;cursor:pointer}
+input,textarea{font:inherit}
+
+/* ===== Header ===== */
+.top{position:fixed;inset:0 0 auto 0;height:62px;display:grid;grid-template-columns:auto 1fr auto;align-items:stretch;z-index:20;background:linear-gradient(var(--redd),var(--red));color:#fff;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+.top::after{content:"";position:absolute;left:0;right:0;bottom:-12px;height:12px;background:var(--tdd) var(--meander) repeat-x center/20px 12px;border-bottom:2px solid var(--gold)}
+.tb{display:flex;align-items:center;gap:8px;padding:0 14px}
+.tb .lbl{font-size:12px;letter-spacing:1.2px;color:var(--goldl);display:block;text-transform:uppercase}
+.tb .val{font-family:var(--hfont);font-weight:700;font-size:21px;white-space:nowrap}
+.tb.mid{min-width:0;overflow:hidden;border-left:2px solid rgba(243,210,122,.35);border-right:2px solid rgba(243,210,122,.35)}
+.tb.mid .val{overflow:hidden;text-overflow:ellipsis;display:block}
+.locks{display:flex;gap:5px}
+.lk{display:flex;align-items:center;gap:2px;padding:2px 7px;border:1.5px solid rgba(243,210,122,.5);border-radius:6px;background:rgba(0,0,0,.2);font-size:17px;cursor:pointer;user-select:none;transition:.3s}
+.lk b{font-family:var(--hfont);font-size:17px;color:var(--goldl);min-width:14px;text-align:center}
+.lk.open{background:var(--gold);border-color:var(--goldl);box-shadow:0 0 12px rgba(243,210,122,.8)}
+.lk.open b{color:var(--redd)}
+.lk.pop{animation:pop .7s}
+@keyframes pop{0%{transform:scale(1)}40%{transform:scale(1.5) rotate(-8deg)}100%{transform:scale(1)}}
+.timer{font-family:var(--hfont);font-weight:700;font-size:23px;font-variant-numeric:tabular-nums;color:var(--goldl);cursor:pointer;white-space:nowrap}
+.timer.warn{color:#ffb86b}.timer.over{color:#ff9a9d}
+.tbtn{border:1.5px solid rgba(243,210,122,.55);background:transparent;border-radius:6px;padding:3px 9px;font-weight:700;font-size:15px;color:#fff}
+.tbtn:hover{border-color:var(--goldl);color:var(--goldl)}
+
+/* ===== Slides ===== */
+.deck{position:absolute;inset:80px 0 70px 0;z-index:1}
+.slide{position:absolute;inset:0;overflow:auto;padding:8px clamp(16px,3.4vw,48px) 14px;opacity:0;visibility:hidden;transform:scale(.98);transition:opacity .4s,transform .4s,visibility .4s}
+.slide.active{opacity:1;visibility:visible;transform:none}
+.inner{max-width:1280px;margin:0 auto}
+h2{font-family:var(--hfont);font-weight:700;font-size:clamp(26px,2.8vw,36px);margin:0 0 4px;color:var(--goldl);display:flex;align-items:center;gap:12px;text-shadow:0 2px 0 rgba(0,0,0,.4)}
+h3{font-family:var(--hfont);font-size:22px;margin:0 0 6px;color:var(--redd)}
+.sub{color:#cfe5e0;margin:0 0 10px;font-size:18px}
+.tag{display:inline-flex;align-items:center;gap:6px;font-family:var(--hfont);font-weight:700;letter-spacing:1px;font-size:16px;color:var(--redd);background:linear-gradient(var(--goldl),var(--gold));padding:1px 14px;border-radius:3px;margin-bottom:4px;box-shadow:0 2px 0 var(--goldd)}
+.card{background:var(--parch);border:2px solid var(--gold);box-shadow:var(--shadow),inset 0 0 0 4px var(--parch),inset 0 0 0 5px rgba(154,113,28,.45);padding:14px 18px;position:relative;border-radius:8px}
+.card.dark{background:linear-gradient(var(--t),var(--td));color:#fff;box-shadow:var(--shadow),inset 0 0 0 4px transparent,inset 0 0 0 5px rgba(243,210,122,.35)}
+.card.dark h3{color:var(--goldl)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{border:none;border-radius:6px;padding:9px 16px;font-weight:700;background:var(--red);color:#fff;box-shadow:0 4px 0 var(--redd);transition:transform .1s,filter .15s}
+.btn:hover{filter:brightness(1.12)}
+.btn:active{transform:translateY(2px);box-shadow:0 2px 0 var(--redd)}
+.btn[disabled]{opacity:.45;cursor:default}
+.btn.gold{background:linear-gradient(var(--goldl),var(--gold));color:var(--redd);box-shadow:0 4px 0 var(--goldd)}
+.btn.teal{background:var(--tl);box-shadow:0 4px 0 var(--t)}
+.btn.ghost{background:#fff;color:var(--ink);border:2px solid var(--parchd);box-shadow:none}
+.btn.sm{padding:6px 12px;font-size:17px}
+.muted{color:var(--muted)}
+.def{padding:7px 12px;margin:6px 0;background:#fff8e6;border-left:5px solid var(--gold);font-size:18px;border-radius:0 6px 6px 0}
+.def.r{border-color:var(--red);background:#fdeceb}.def.t{border-color:var(--tl);background:var(--tsoft)}
+.feedback{font-size:19px;font-weight:700;min-height:27px;margin-top:6px}
+.feedback.ok{color:var(--ok)}.feedback.no{color:var(--no)}
+.shake{animation:shake .4s}
+@keyframes shake{20%,60%{transform:translateX(-6px)}40%,80%{transform:translateX(6px)}}
+
+/* lock status bar on every lock slide */
+.lockbar{display:flex;align-items:center;gap:12px;margin-top:10px;padding:6px 14px;border-radius:8px;background:rgba(0,0,0,.25);border:1.5px dashed rgba(243,210,122,.5);color:#e9f3f1;font-size:18px}
+.lockbar .pad{font-size:30px;transition:.4s}
+.lockbar.open{background:rgba(217,169,58,.25);border-style:solid;border-color:var(--goldl);color:#fff}
+.lockbar.open .pad{transform:rotate(-15deg) scale(1.2)}
+.lockbar b{color:var(--goldl);font-family:var(--hfont);font-size:22px}
+
+/* ===== Nav ===== */
+.nav{position:fixed;inset:auto 0 0 0;height:58px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;z-index:20;gap:10px;background:linear-gradient(var(--red),var(--redd))}
+.nav::before{content:"";position:absolute;left:0;right:0;top:-12px;height:12px;background:var(--tdd) var(--meander) repeat-x center/20px 12px;border-top:2px solid var(--gold)}
+.nav .btn{background:linear-gradient(var(--goldl),var(--gold));color:var(--redd);box-shadow:0 3px 0 var(--goldd);padding:6px 16px}
+.dots{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+.dot{min-width:42px;height:32px;border:1.5px solid rgba(243,210,122,.55);border-radius:16px;background:transparent;color:#f6e3b0;font-size:15px;font-weight:700;transition:.2s}
+.dot.on{background:var(--goldl);color:var(--redd);border-color:var(--goldl)}
+.dot.done{background:rgba(255,255,255,.12);color:#fff}
+.tnotes{position:fixed;right:16px;bottom:72px;width:min(440px,calc(100vw - 32px));max-height:calc(100vh - 170px);overflow:auto;background:#fffaf0;border:3px solid var(--gold);border-radius:8px;padding:12px 16px;font-size:16px;box-shadow:var(--shadow);z-index:25;display:none}
+.tnotes.show{display:block}
+.tnotes h4{margin:0 0 6px;font-size:17px;color:var(--redd)}
+.tnotes ul{margin:0;padding-left:20px}
+.tnotes li{margin:3px 0}
+.toast{position:fixed;left:50%;top:96px;transform:translate(-50%,-30px);opacity:0;z-index:40;background:linear-gradient(var(--goldl),var(--gold));color:var(--redd);font-family:var(--hfont);font-weight:700;font-size:26px;padding:10px 26px;border-radius:10px;border:3px solid var(--redd);box-shadow:var(--shadow);transition:.4s;pointer-events:none;white-space:nowrap}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* ornament knot */
+.ulz{width:60px;height:60px;color:var(--gold);display:block}
+
+/* ===== Intro: treasury door ===== */
+.intro{height:calc(100vh - 175px);min-height:440px;display:flex;align-items:center;justify-content:center}
+.door{position:relative;width:min(940px,100%);height:100%;max-height:600px;border-radius:120px 120px 10px 10px;padding:16px;
+  background:linear-gradient(90deg,var(--goldd),var(--goldl) 20%,var(--gold) 50%,var(--goldl) 80%,var(--goldd));box-shadow:0 24px 60px rgba(0,0,0,.6)}
+.door .leaf{position:absolute;inset:16px;border-radius:106px 106px 4px 4px;overflow:hidden;
+  background:radial-gradient(ellipse at 50% 40%,var(--redl),var(--red) 45%,var(--redd));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;color:#fff;padding:20px 40px}
+.door .leaf::before{content:"";position:absolute;inset:12px;border:3px solid var(--gold);border-radius:96px 96px 2px 2px;pointer-events:none;
+  box-shadow:inset 0 0 0 5px rgba(0,0,0,.15),inset 0 0 0 8px rgba(217,169,58,.55)}
+.door .seam{position:absolute;top:12px;bottom:12px;left:50%;width:3px;background:rgba(0,0,0,.25);transform:translateX(-50%)}
+.studs{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle,var(--goldl) 0 4px,var(--goldd) 5px,transparent 6px) 0 0/48px 48px;
+  -webkit-mask:linear-gradient(#000,#000) top/100% 26px no-repeat,linear-gradient(#000,#000) bottom/100% 26px no-repeat;mask:linear-gradient(#000,#000) top/100% 26px no-repeat,linear-gradient(#000,#000) bottom/100% 26px no-repeat;opacity:.9}
+.door .ulz{width:84px;height:84px;color:var(--goldl);margin-bottom:4px;position:relative}
+.door .school{font-size:22px;font-weight:700;color:var(--goldl);letter-spacing:1px;position:relative}
+.door .subject{font-family:var(--hfont);font-weight:700;font-size:clamp(50px,6.8vw,88px);line-height:1;letter-spacing:3px;text-transform:uppercase;text-shadow:0 4px 0 rgba(0,0,0,.35);position:relative}
+.door .topic{font-family:var(--hfont);font-weight:700;font-size:clamp(26px,3.1vw,40px);color:var(--goldl);margin-top:8px;position:relative}
+.door .esc{margin-top:8px;font-size:20px;background:rgba(0,0,0,.28);padding:4px 18px;border-radius:30px;position:relative}
+.door .plaque{margin-top:14px;display:flex;gap:10px;align-items:center;position:relative;background:linear-gradient(var(--goldl),var(--gold));color:var(--redd);font-weight:800;font-size:22px;padding:8px 26px;border-radius:6px;box-shadow:0 4px 0 var(--goldd)}
+.keyhole{position:relative;margin-top:12px;width:40px;height:54px;background:linear-gradient(var(--goldl),var(--gold));border-radius:8px;box-shadow:0 3px 0 var(--goldd)}
+.keyhole::after{content:"";position:absolute;left:50%;top:12px;width:12px;height:12px;border-radius:50%;background:#2a1a10;transform:translateX(-50%);box-shadow:0 10px 0 -2px #2a1a10,0 16px 0 -2px #2a1a10}
+
+/* ===== Mission ===== */
+.scroll{background:var(--parch);border-radius:6px;padding:14px 24px;position:relative;box-shadow:var(--shadow);font-size:19px;border-top:12px solid var(--redd);border-bottom:12px solid var(--redd)}
+.scroll::before,.scroll::after{content:"";position:absolute;left:-8px;right:-8px;height:8px;background:var(--gold);border-radius:4px}
+.scroll::before{top:-16px}.scroll::after{bottom:-16px}
+.mlocks{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-top:12px}
+.mlock{background:linear-gradient(var(--t),var(--td));border:2px solid var(--gold);border-radius:10px;color:#fff;text-align:center;padding:8px 6px;cursor:pointer;transition:.25s}
+.mlock:hover{transform:translateY(-3px)}
+.mlock .ic{font-size:32px}
+.mlock .nm{font-size:16px;font-weight:700;line-height:1.2;min-height:40px}
+.mlock .lt{font-family:var(--hfont);font-size:22px;color:var(--goldl)}
+.mlock.open{background:linear-gradient(var(--goldl),var(--gold));color:var(--redd)}
+.mlock.open .lt{color:var(--redd)}
+.sun{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:6px 0}
+.wd{border:2px solid var(--gold);background:#fff;color:var(--redd);font-family:var(--hfont);font-weight:700;font-size:26px;padding:4px 14px;border-radius:8px;box-shadow:0 3px 0 var(--goldd)}
+.wd.on{background:var(--gold);color:#fff}
+.reveal{list-style:none;padding:0;margin:6px 0 0;font-size:18px}
+.reveal li{padding:4px 10px;margin:4px 0;background:#fff;border-left:5px solid var(--tl);border-radius:0 6px 6px 0;animation:fadeIn .4s}
+@keyframes fadeIn{from{opacity:0;transform:translateX(-10px)}to{opacity:1;transform:none}}
+
+/* ===== Lock 1 ===== */
+.tabs{display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap}
+.tabs button{border:2px solid var(--gold);background:rgba(0,0,0,.2);color:#fff;border-radius:20px;padding:4px 14px;font-weight:700;font-size:17px}
+.tabs button.on{background:var(--goldl);color:var(--redd)}
+.tabs button.done::after{content:" ✓";color:#7ee2a8}
+.tabs button.on.done::after{color:var(--ok)}
+.riddle{font-family:var(--hfont);font-weight:700;font-size:28px;line-height:1.25}
+.rline{display:block;width:100%;text-align:left;border:none;background:transparent;padding:3px 8px;border-radius:6px;font:inherit;color:var(--ink);transition:.2s}
+.rline:hover{background:#fff3cf}
+.rline.got{background:var(--oksoft)}
+.rline small{display:block;font-family:"Noto Sans",sans-serif;font-weight:500;font-size:17px;color:var(--ok)}
+.whatis{font-family:var(--hfont);font-size:22px;color:var(--muted);padding-left:8px}
+.opts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.opt{border:2px solid var(--parchd);background:#fff;border-radius:10px;padding:6px 4px;font-weight:700;font-size:18px;text-align:center;transition:.2s}
+.opt .e{font-size:34px;display:block;line-height:1.1}
+.opt:hover{border-color:var(--gold)}
+.opt.ok{border-color:var(--ok);background:var(--oksoft)}
+.opt.no{border-color:var(--no);background:var(--nosoft);opacity:.7}
+.steps{margin:0;padding-left:24px;font-size:18px}
+.steps li{margin:3px 0}
+.prog{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}
+.prog span{padding:3px 10px;border-radius:14px;background:rgba(255,255,255,.12);font-size:16px;font-weight:700}
+.prog span.ok{background:#2f9e62}
+
+/* ===== Lock 2 table ===== */
+.cmp{width:100%;border-collapse:separate;border-spacing:0;font-size:19px;margin-top:6px}
+.cmp th{background:var(--t);color:#fff;padding:6px 8px;font-weight:700}
+.cmp th:first-child{border-radius:8px 0 0 0;text-align:left}.cmp th:last-child{border-radius:0 8px 0 0}
+.cmp td{padding:5px 8px;border-bottom:1px solid var(--parchd);background:#fff}
+.cmp td.c{text-align:center;width:120px}
+.cell{width:62px;height:42px;border:2px dashed var(--gold);background:#fffdf6;border-radius:8px;font-size:28px;font-weight:800;line-height:1}
+.cell.p{color:var(--ok);border-style:solid}.cell.m{color:var(--no);border-style:solid}
+.cell.bad{background:var(--nosoft);animation:shake .4s}.cell.good{background:var(--oksoft)}
+.pick{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap;align-items:center}
+
+/* ===== Lock 3 matching ===== */
+.match{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px}
+.mcol{display:flex;flex-direction:column;gap:7px}
+.mi{border:2px solid var(--gold);background:#fff;border-radius:8px;padding:6px 12px;font-weight:700;font-size:19px;text-align:left;transition:.2s;display:flex;align-items:center;gap:8px}
+.mi .n{display:inline-flex;width:26px;height:26px;border-radius:50%;background:var(--parchd);align-items:center;justify-content:center;font-size:15px;flex:none}
+.mi.sel{background:var(--goldl);transform:translateX(6px)}
+.mi.done{border-color:var(--ok);background:var(--oksoft);cursor:default}
+.mi.done .n{background:var(--ok);color:#fff}
+.mi.bad{background:var(--nosoft);animation:shake .4s}
+.mean{background:transparent;border:none;padding:0;text-align:left;font:inherit;color:inherit;width:100%}
+.flip{border:2px solid var(--parchd);background:#fff;border-radius:8px;padding:5px 10px;margin:5px 0;font-size:18px;cursor:pointer}
+.flip b{color:var(--redd)}
+.flip span{display:none;color:var(--ok);font-weight:700}
+.flip.on span{display:inline}
+
+/* ===== Lock 4 sentences ===== */
+.sents{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.sent{background:var(--parch);border:2px solid var(--gold);border-radius:8px;padding:8px 12px;box-shadow:var(--shadow)}
+.sent .s{font-size:19px;font-weight:600;min-height:52px}
+.sent .blank{display:inline-block;min-width:110px;border-bottom:3px dashed var(--red);color:var(--redd);font-weight:800;padding:0 4px}
+.sent.ok .blank{border-color:var(--ok);color:var(--ok)}
+.sent .os{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.sent .os button{border:2px solid var(--parchd);background:#fff;border-radius:16px;padding:2px 11px;font-size:17px;font-weight:700}
+.sent .os button:hover{border-color:var(--gold)}
+.sent .os button.no{background:var(--nosoft);border-color:var(--no);text-decoration:line-through;opacity:.7}
+.sent .os button.ok{background:var(--oksoft);border-color:var(--ok)}
+.sent .nt{font-size:16px;color:var(--ok);font-weight:600;min-height:0}
+.own{display:flex;gap:10px;align-items:center;margin-top:10px;background:rgba(0,0,0,.25);border:1.5px solid rgba(243,210,122,.5);padding:6px 12px;border-radius:8px;color:#fff}
+.own [contenteditable]{flex:1;min-height:32px;background:#fffdf6;color:var(--ink);border-radius:6px;padding:3px 10px;outline:none;font-size:19px}
+[contenteditable]:empty::before{content:attr(data-ph);color:#a8957a}
+
+/* ===== Lock 5 builder ===== */
+.objs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px}
+.objs button{border:2px solid var(--gold);background:#fff;border-radius:18px;padding:3px 12px;font-weight:700;font-size:17px}
+.objs button.on{background:var(--gold);color:#fff}
+.btab{width:100%;border-collapse:collapse;font-size:17px}
+.btab th{background:var(--t);color:#fff;padding:4px 6px;font-size:16px;text-align:left}
+.btab td{padding:3px 3px}
+.btab input,.fin{width:100%;border:2px solid var(--parchd);border-radius:6px;padding:4px 8px;font-size:18px;background:#fff}
+.btab input:focus,.fin:focus{outline:none;border-color:var(--gold)}
+.btab .arr{color:var(--goldd);font-weight:800;text-align:center;width:22px}
+.prev{background:linear-gradient(var(--redl),var(--red));color:#fff;border-radius:10px;padding:10px 16px;border:3px solid var(--gold);min-height:150px}
+.prev .riddle{color:#fff;font-size:26px}
+.prev .whatis{color:var(--goldl)}
+.chk{list-style:none;padding:0;margin:6px 0;font-size:17px}
+.chk li{padding:3px 8px;margin:3px 0;background:#fff;border-left:4px solid #cbb994;border-radius:0 6px 6px 0}
+.chk li.ok{background:var(--oksoft);border-color:var(--ok)}
+.gal{max-height:120px;overflow:auto;margin-top:6px}
+.gi{display:flex;justify-content:space-between;align-items:center;gap:6px;padding:4px 8px;border-bottom:1px solid var(--parchd);font-size:17px}
+.gi .tx{flex:1}
+.gi .an{display:none;color:var(--ok);font-weight:800}
+.gi.show .an{display:inline}
+.gi button{border:none;border-radius:6px;padding:2px 8px;font-weight:700;font-size:15px}
+.gi .rv{background:var(--goldl);color:var(--redd)}.gi .dl{background:var(--nosoft);color:var(--no)}
+
+/* ===== Chest ===== */
+.chestwrap{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:center}
+.chest{width:100%;max-height:calc(100vh - 230px);display:block;overflow:visible}
+.chest #lid{transform-box:fill-box;transform-origin:10% 100%;transition:transform 1.4s cubic-bezier(.3,1.6,.5,1)}
+.chest.open #lid{transform:translate(-6px,-46px) rotate(-16deg)}
+.chest #glow{opacity:0;transition:opacity 1.2s .3s}
+.chest.open #glow{opacity:1}
+.chest #rays{transform-box:fill-box;transform-origin:50% 50%}
+.chest.open #rays{animation:spin 14s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.chest .loot{opacity:0;transition:opacity .6s,transform 1s}
+.chest.open .loot{opacity:1}
+.code{display:flex;gap:10px;justify-content:center;margin:10px 0}
+.code input{width:68px;height:80px;text-align:center;font-family:var(--hfont);font-weight:700;font-size:46px;border:3px solid var(--gold);border-radius:10px;background:var(--parch);color:var(--redd);text-transform:uppercase}
+.code input:focus{outline:none;box-shadow:0 0 0 4px rgba(243,210,122,.6)}
+.code.ok input{border-color:var(--ok);background:var(--oksoft)}
+.hintl{display:flex;gap:8px;justify-content:center;font-family:var(--hfont);font-size:22px;color:var(--goldl)}
+.hintl span{min-width:40px;text-align:center;border-bottom:2px solid var(--gold)}
+.prize{display:none;margin-top:8px}
+.prize.show{display:block;animation:fadeIn .6s}
+
+/* ===== Reflection ===== */
+.frames .fr{display:flex;align-items:baseline;gap:8px;margin:7px 0;font-weight:700;font-size:19px;flex-wrap:wrap}
+.frames .fr div[contenteditable]{flex:1;min-width:220px;border-bottom:2px dashed var(--red);outline:none;padding:2px 6px;font-weight:500;color:var(--redd)}
+.sa{width:100%;border-collapse:collapse;font-size:17px}
+.sa th{background:var(--t);color:#fff;padding:4px 6px;font-size:15px}
+.sa td{padding:4px 6px;border-bottom:1px solid var(--parchd)}
+.sa td.c{text-align:center;width:70px}
+.sa button{width:34px;height:34px;border-radius:50%;border:2px solid var(--gold);background:#fff;font-size:18px;padding:0}
+.sa button.on{background:var(--gold);color:#fff}
+
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+@media (max-height:900px){
+  body{font-size:18px}
+  h2{font-size:28px}
+  .sub{font-size:17px;margin-bottom:6px}
+  .card{padding:10px 14px}
+  .def{padding:5px 10px;margin:4px 0;font-size:17px}
+  .riddle{font-size:24px}
+  .prev .riddle{font-size:22px}
+  .opt .e{font-size:28px}
+  .scroll{padding:10px 20px;font-size:18px}
+  .mlock .ic{font-size:26px}
+  .mi{padding:4px 10px;font-size:18px}
+  .mcol{gap:5px}
+  .sent .s{font-size:18px;min-height:46px}
+  .sent{padding:6px 10px}
+  .sent .os button{font-size:16px;padding:2px 9px}
+  .cell{height:36px;font-size:24px}
+  .cmp{font-size:18px}
+  .cmp td{padding:3px 8px}
+  .lockbar{margin-top:6px;padding:4px 12px}
+  .lockbar .pad{font-size:24px}
+  .code input{width:58px;height:68px;font-size:38px}
+  .gal{max-height:90px}
+  .door .ulz{width:64px;height:64px}
+  .door .plaque{font-size:20px;margin-top:10px}
+  .keyhole{margin-top:8px;width:34px;height:44px}
+}
+@media (max-width:1000px){
+  .locks{display:none}
+  .grid2,.match,.sents,.chestwrap{grid-template-columns:1fr !important}
+  .mlocks{grid-template-columns:repeat(3,1fr)}
+  .dots{display:none}
+  .opts{grid-template-columns:repeat(2,1fr)}
+}
+</style>
+</head>
+<body>
+
+<!-- ornament symbol: endless knot (өлзий хээ) -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="ulzii" viewBox="0 0 100 100">
+    <g fill="none" stroke="currentColor" stroke-width="5" stroke-linejoin="round" transform="rotate(45 50 50)">
+      <rect x="29" y="29" width="42" height="42"/>
+      <path d="M29 43H71M29 57H71M43 29V71M57 29V71"/>
+      <circle cx="24" cy="24" r="8"/><circle cx="76" cy="24" r="8"/><circle cx="24" cy="76" r="8"/><circle cx="76" cy="76" r="8"/>
+    </g>
+    <circle cx="50" cy="50" r="47" fill="none" stroke="currentColor" stroke-width="2.5" stroke-dasharray="4 5"/>
+  </symbol>
+</svg>
+
+<header class="top">
+  <div class="tb"><span><span class="lbl">Хичээл</span><span class="val">📜 Монгол хэл · 5-р анги</span></span></div>
+  <div class="tb mid"><span style="min-width:0"><span class="lbl">Хааны эрдэнэсийн өрөө · <span id="roomNo">Өрөө 1/9</span></span><span class="val" id="stageName"></span></span></div>
+  <div class="tb">
+    <div class="locks" id="locks" title="Түгжээнүүд (багш: 2 удаа дарж нээж/хааж болно)">
+      <span class="lk" id="lk0">🔒<b>1</b></span><span class="lk" id="lk1">🔒<b>2</b></span><span class="lk" id="lk2">🔒<b>3</b></span><span class="lk" id="lk3">🔒<b>4</b></span><span class="lk" id="lk4">🔒<b>5</b></span>
+    </div>
+    <div class="timer" id="timer" title="Хичээлийн үлдсэн хугацаа (2 удаа дарвал 40:00 болно)">⏱ <span id="tval">40:00</span></div>
+    <button class="tbtn" id="tPlay" title="Цаг эхлүүлэх / зогсоох">▶</button>
+    <button class="tbtn" id="notesBtn" title="Багшийн тэмдэглэл (N)">📝</button>
+    <button class="tbtn" id="fsBtn" title="Бүтэн дэлгэц (F)">⛶</button>
+  </div>
+</header>
+
+<main class="deck">
+
+<!-- 0. Танилцуулга -->
+<section class="slide" data-name="Эрдэнэсийн өрөөний хаалга" data-min="1"
+  data-notes="Хүүхдүүдтэй мэндэлж, өөрийгөө танилцуулна.|Сэдэв: «Далд утгыг таамаглаж, тайлбарлая» — Монгол хэл V, 10-р бүлэг (х.117–128).|Хичээлийн бүтэц — «Эрдэнэсийн өрөөнөөс гарах» тоглоом: 5 түгжээ → 5 нууц үсэг → авдрын код.|Дээд талын ▶ товчоор 40 минутын цагийг эхлүүлнэ. F — бүтэн дэлгэц, N — энэ тэмдэглэл.">
+  <div class="inner intro">
+    <div class="door">
+      <div class="leaf">
+        <div class="studs"></div>
+        <div class="seam"></div>
+        <svg class="ulz"><use href="#ulzii"/></svg>
+        <div class="school">🏫 1-р сургууль</div>
+        <div class="subject">Монгол хэл</div>
+        <div class="topic">Далд утгыг таамаглаж, тайлбарлая</div>
+        <div class="esc">🗝️ Хааны эрдэнэсийн өрөөнөөс гарцгаая!</div>
+        <div class="plaque">👩‍🏫 Багш: В. Гэрэлтуяа <span style="opacity:.6">·</span> 5-р анги</div>
+        <div class="keyhole"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 1. Даалгавар -->
+<section class="slide" data-name="Даалгавар: 5 түгжээ" data-min="3"
+  data-notes="Түүхийг уншина: анги бүхэлдээ хааны эрдэнэсийн өрөөнд түгжигджээ. Түгжээ бүрийг тайлахад нэг нууц үсэг гарна — 5 үсгээр авдрын кодыг бүрдүүлнэ.|Оньсого хэрхэн зохиогддогийг х.118-ын жишээгээр ойлгуулна: «Алтан өндөг агаараар өнхөрнө» — үг бүр дээр дарж ямар шинжийг нуусныг харуулна.|Дүгнэлт: оньсогод өнгө зүс, хэлбэр дүрс, тоо хэмжээ, орон байр, үйл хөдлөлөөр нь нууцалдаг (х.118, 5-р даалгавар).|Түгжээний карт дээр дарвал тухайн өрөө рүү шууд очно.">
+  <div class="inner">
+    <span class="tag">🗝️ Даалгавар</span>
+    <h2>Бид хааны эрдэнэсийн өрөөнд түгжигдлээ!</h2>
+    <div class="grid2" style="grid-template-columns:1fr 1fr;align-items:start;gap:22px;margin-top:14px">
+      <div class="scroll">
+        Эрт урьд цагт нэгэн мэргэн хаан эрдэнэсээ <b>таван түгжээтэй</b> өрөөнд нуужээ. Түгжээг хүчээр биш, <b>ухаанаар</b> л нээнэ.<br>
+        Түгжээ бүр нэг <b>нууц үсэг</b> өгнө. Таван үсгийг цуглуулбал <b>эрдэнэсийн авдар</b> нээгдэнэ! 🏆
+      </div>
+      <div class="card">
+        <h3>☀️ Хаан эхний сэжүүрээ өгчээ</h3>
+        <div class="def r" style="font-size:17px">Оньсогод таалгах зүйлийнхээ онцлог шинжийг <b>өөр төстэй зүйлээр орлуулж</b> нууцалдаг. <span class="muted">(х.118)</span></div>
+        <div class="sun" id="sun">
+          <button class="wd" data-r="🟡 <b>Алтан</b> — шар өнгөөр нь алттай адилтгасан (өнгө зүс)">Алтан</button>
+          <button class="wd" data-r="⚪ <b>өндөг</b> — бөөрөнхий хэлбэрээр нь (хэлбэр дүрс)">өндөг</button>
+          <button class="wd" data-r="📍 <b>агаараар</b> — тэнгэрт байдаг (орон байр)">агаараар</button>
+          <button class="wd" data-r="🔄 <b>өнхөрнө</b> — хөдөлж явдаг (үйл хөдлөл)">өнхөрнө</button>
+        </div>
+        <ul class="reveal" id="sunOut"></ul>
+        <div class="feedback ok" id="sunFb" style="font-size:18px">👆 Үг бүр дээр дарж, юуг нуусныг олоорой.</div>
+      </div>
+    </div>
+    <div class="mlocks" id="mlocks">
+      <div class="mlock" data-go="2"><div class="ic">🔒</div><div class="nm">1. Далд утгыг тайл</div><div class="lt">?</div></div>
+      <div class="mlock" data-go="3"><div class="ic">🔒</div><div class="nm">2. Адил төстэй шинж</div><div class="lt">?</div></div>
+      <div class="mlock" data-go="4"><div class="ic">🔒</div><div class="nm">3. Хэлц үгийн нууц</div><div class="lt">?</div></div>
+      <div class="mlock" data-go="5"><div class="ic">🔒</div><div class="nm">4. Хэлц үгийг зөв хэрэглэ</div><div class="lt">?</div></div>
+      <div class="mlock" data-go="6"><div class="ic">🔒</div><div class="nm">5. Өөрөө оньсого зохио</div><div class="lt">?</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2. Түгжээ 1 -->
+<section class="slide" data-name="Түгжээ 1: Далд утгыг тайл" data-min="7"
+  data-notes="Оньсогууд: х.120-ын 2-р даалгаврын №2, №3, №5 (таван хошуу малын оньсого) ба х.121-ийн «Үүлэн хар нөмрөгтэй…» оньсого.|Эхлээд х.121-ийн 4 алхмыг санууна: анхааралтай унших → мөр мөрөөр нь бодох → таамаглах → сонгож батлах.|Хүүхэд хариугаа сонгосны дараа оньсогын МӨР дээр дарж «аль үг нотолж байна вэ?» гэж тайлбарлуулна. Нотолгоо: оньсого бүрт ≥2 мөр.|Ямаа (№1) оньсогыг Бат хэрхэн тайлбарласныг (х.120) жишээ болгон хэлж болно.|Түгжээ нээгдэхэд нууц үсэг «Э» гарна. Цаг дутвал багш дээд мөрний 🔒1 дээр 2 удаа дарж нээж болно.">
+  <div class="inner">
+    <span class="tag">🔒 Түгжээ 1</span>
+    <h2>🔍 Далд утгыг тайл — хариугаа нотол!</h2>
+    <div class="grid2" style="grid-template-columns:1.25fr .75fr;align-items:start">
+      <div>
+        <div class="tabs" id="r1tabs"></div>
+        <div class="card">
+          <div class="riddle" id="r1lines"></div>
+          <div class="whatis">…………… Тэр юу вэ? <span class="muted" id="r1src" style="font-size:16px"></span></div>
+          <div class="opts" id="r1opts"></div>
+          <div class="feedback" id="r1fb"></div>
+        </div>
+      </div>
+      <div class="card dark">
+        <h3>🧭 Оньсого таах 4 алхам <span style="font-size:15px;opacity:.7">(х.121)</span></h3>
+        <ol class="steps">
+          <li>Оньсогоо анхааралтай унш.</li>
+          <li>Мөр мөрөөр нь ямар шинжийг нуусныг бод.</li>
+          <li>Хариу юу байж болохыг таамагла.</li>
+          <li>Хамгийн оновчтойг нь сонгож, <b>батал</b>.</li>
+        </ol>
+        <div class="def t" style="color:var(--ink);font-size:17px">✅ Хариугаа сонгосны дараа <b>мөр бүр дээр дарж</b> нотолгоогоо нээ. Оньсого бүрт дор хаяж <b>2 нотолгоо</b>.</div>
+        <div class="prog" id="r1prog"></div>
+      </div>
+    </div>
+    <div class="lockbar" id="st0"><span class="pad">🔒</span><span class="lbtxt">4 оньсогыг тайлж, тус бүрд 2 нотолгоо олбол түгжээ нээгдэнэ.</span></div>
+  </div>
+</section>
+
+<!-- 3. Түгжээ 2 -->
+<section class="slide" data-name="Түгжээ 2: Адил төстэй шинж" data-min="6"
+  data-notes="х.121, 1-р даалгавар: «Эрээн дээсийг эвхэж болдоггүй» — могой, солонго хоёрыг шинжээр нь харьцуулсан хүснэгт (сурах бичигт +/− тэмдэглэсэн).|х.119, 5-р даалгаврын 5): «Хар торгон дээлээ…» — тоншуулын арьсыг дээлтэй, хошууг нь сүхтэй адилтгасан. Хэрээтэй харьцуулна.|Нүдэнд дарахад: хоосон → + → − → хоосон. «Шалгах» товчоор алдааг улаанаар харуулна. Дараа нь хариугаа сонгоно.|Асуулт: «Яагаад могой биш вэ?» — эвхэж (ороож) болдог. «Яагаад хэрээ биш вэ?» — мод цоолдоггүй.|Хоёр хүснэгт зөв болбол нууц үсэг «Р» гарна.">
+  <div class="inner">
+    <span class="tag">🔒 Түгжээ 2</span>
+    <h2>⚖️ Адил төстэй шинжээр нь харьцуул</h2>
+    <div class="tabs" id="t2tabs"></div>
+    <div class="grid2" style="grid-template-columns:.7fr 1.3fr;align-items:start">
+      <div class="card">
+        <h3>📜 Оньсого <span class="muted" id="t2src" style="font-size:15px"></span></h3>
+        <div class="riddle" id="t2riddle"></div>
+        <div class="whatis">…… Тэр юу вэ?</div>
+        <div class="def" style="font-size:17px">+ = энэ шинж <b>тохирно</b>, − = <b>тохирохгүй</b>. Нүдэн дээр дарж тэмдэглээрэй.</div>
+      </div>
+      <div class="card">
+        <table class="cmp" id="t2table"></table>
+        <div class="pick">
+          <button class="btn teal sm" id="t2check">✓ Хүснэгтийг шалгах</button>
+          <span id="t2pick" class="row"></span>
+        </div>
+        <div class="feedback" id="t2fb"></div>
+      </div>
+    </div>
+    <div class="lockbar" id="st1"><span class="pad">🔒</span><span class="lbtxt">2 хүснэгтийг зөв бөглөж, хариугаа баталбал түгжээ нээгдэнэ.</span></div>
+  </div>
+</section>
+
+<!-- 4. Түгжээ 3 -->
+<section class="slide" data-name="Түгжээ 3: Хэлц үгийн нууц" data-min="5"
+  data-notes="Хэлц үг: 2 ба түүнээс олон үг нийлж НЭГ далд утга илтгэнэ (х.126). Жишээ: «амаа барих» = харамсах.|Тааруулах даалгавар: х.128, 2-р даалгаврын 1) — 8 хэлцийг утгатай нь холбоно. Эхлээд зүүн талаас хэлцийг, дараа нь баруун талаас утгыг дарна.|«Хэлцэн үлгэр» (х.125)-ийн хэлцүүдийг баруун доод картаас нээж ярилцана. Тайлбарлах дараалал (х.126): үг бүрийн утга → далд санаа → ойр орчмын үгээс таамаглах → өгүүлбэр зохиох.|8 хос зөв болбол нууц үсэг «Д» гарна.">
+  <div class="inner">
+    <span class="tag">🔒 Түгжээ 3</span>
+    <h2>💎 Хэлц үгийн нууц — утгатай нь холбо</h2>
+    <div class="grid2" style="grid-template-columns:1.3fr .7fr;align-items:start">
+      <div class="card">
+        <div class="row" style="justify-content:space-between;margin-bottom:6px"><b style="color:var(--redd)">① Хэлц үг</b><b style="color:var(--t)">② Далд утга</b></div>
+        <div class="match"><div class="mcol" id="m3L"></div><div class="mcol" id="m3R"></div></div>
+        <div class="feedback" id="m3fb"></div>
+      </div>
+      <div>
+        <div class="card dark" style="padding:10px 14px">
+          <h3>💡 Хэлц үг гэж юу вэ?</h3>
+          <div style="font-size:17px">2 ба түүнээс олон үг нийлж <b style="color:var(--goldl)">нэг далд утга</b> илтгэнэ. <span style="opacity:.75">(х.126)</span><br>«амаа барих» → <b style="color:var(--goldl)">харамсах</b></div>
+        </div>
+        <div class="card" style="margin-top:10px;padding:10px 14px">
+          <h3 style="font-size:19px">📖 «Хэлцэн үлгэр»-ийн хэлц <span class="muted" style="font-size:14px">(х.125)</span></h3>
+          <div class="flip"><b>нүдний цэцгий мэт</b> хайрлах <span>→ эрхэмлэн нандигнах</span></div>
+          <div class="flip"><b>эрийн цээнд</b> хүрэх <span>→ том болж, хүч чадалтай болох</span></div>
+          <div class="flip"><b>магнай хагартал</b> баярлах <span>→ маш их баярлах</span></div>
+          <div class="flip"><b>номын мөр</b> хөөх <span>→ эрдэм ном сурах</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="lockbar" id="st2"><span class="pad">🔒</span><span class="lbtxt">8 хэлцийг утгатай нь зөв холбовол түгжээ нээгдэнэ.</span></div>
+  </div>
+</section>
+
+<!-- 5. Түгжээ 4 -->
+<section class="slide" data-name="Түгжээ 4: Хэлц үгийг зөв хэрэглэ" data-min="6"
+  data-notes="Эхний 3 өгүүлбэр: х.127, 5-р даалгавар («Хэлцэн үлгэр»-ийн өгүүлбэрийг хэлцээр солин найруулах). Сурах бичигт өгсөн бусад хэлцүүд ч мөн тохирно — зөв хариулсны дараа тэдгээр нь гарч ирнэ.|Дараагийн 3 өгүүлбэрт х.128-ын хэлцүүдийг (туулай зүрхтэй, ус балгасан юм шиг) болон х.125-ын «нүдний цэцгий мэт»-ийг хэрэглэнэ.|Буруу сонголт бүр дээр «Энэ хэлц ямар утгатай билээ?» гэж асууж, яагаад тохирохгүйг тайлбарлуулна.|Доорх мөрөнд хүүхэд өөрийн өгүүлбэрийг зохиож бичнэ (х.128, 2-р даалгаврын 2). Бичсэн нь хадгалагдана.|6 өгүүлбэр зөв болбол нууц үсэг «Э» гарна.">
+  <div class="inner">
+    <span class="tag">🔒 Түгжээ 4</span>
+    <h2>✒️ Хэлц үгийг зөв газар нь хэрэглэ</h2>
+    <div class="sents" id="s4"></div>
+    <div class="own">✍️ <b style="white-space:nowrap">Миний өгүүлбэр:</b><div contenteditable="true" data-k="mn_dald_own" data-ph="Хэлц үг оролцуулан өгүүлбэр зохиогоорой… (х.128)"></div></div>
+    <div class="lockbar" id="st3"><span class="pad">🔒</span><span class="lbtxt">6 өгүүлбэрт тохирох хэлцийг сонговол түгжээ нээгдэнэ.</span></div>
+  </div>
+</section>
+
+<!-- 6. Түгжээ 5 -->
+<section class="slide" data-name="Түгжээ 5: Өөрөө оньсого зохио" data-min="7"
+  data-notes="Оньсого зохиох дараалал (х.122–123): зүйлээ сонгох → гадаад, дотоод шинжийг жагсаах → онцлог шинжийг сонгох → төстэй зүйлээр орлуулах → шүлэглэх.|Жишээнүүд: Батын туулайн оньсого (х.123), Хулангийн зайрмагны оньсого (х.125), зараа (х.124, 1-р даалгавар). «💡 Жишээ» товч сонгосон зүйлийн жишээг бөглөнө.|Шалгуур автоматаар шалгагдана (х.125-ын үнэлгээний шалгуурын дагуу). ХАМГИЙН ЧУХАЛ: хариу үг оньсогод өөрөө орох ёсгүй — далд байх ёстой.|Бүлэг бүр 1 оньсого зохиож «💾 Хадгалах» дарна. Бусад бүлэг таана; «👀» товчоор хариуг харуулна.|Эхний оньсого хадгалагдахад нууц үсэг «М» гарна.">
+  <div class="inner">
+    <span class="tag">🔒 Түгжээ 5</span>
+    <h2>✍️ Өөрөө оньсого зохио — найзууддаа таалга</h2>
+    <div class="grid2" style="grid-template-columns:1.15fr .85fr;align-items:start">
+      <div class="card">
+        <div class="objs" id="objs">
+          <button data-o="zaraa" class="on">🦔 Зараа</button>
+          <button data-o="tuulai">🐇 Туулай</button>
+          <button data-o="zairmag">🍦 Зайрмаг</button>
+          <button data-o="own">✏️ Өөрийн зүйл</button>
+        </div>
+        <div class="row" style="flex-wrap:nowrap"><b style="white-space:nowrap">① Хариу:</b><input class="fin" id="bAns" placeholder="Таалгах зүйл"></div>
+        <table class="btab" style="margin-top:6px">
+          <tr><th>② Онцлог шинж</th><th></th><th>③ Төстэй зүйл</th><th></th><th>④ Оньсогын мөр</th></tr>
+          <tr><td><input class="bF" data-i="0"></td><td class="arr">→</td><td><input class="bC" data-i="0"></td><td class="arr">→</td><td><input class="bL" data-i="0"></td></tr>
+          <tr><td><input class="bF" data-i="1"></td><td class="arr">→</td><td><input class="bC" data-i="1"></td><td class="arr">→</td><td><input class="bL" data-i="1"></td></tr>
+          <tr><td><input class="bF" data-i="2"></td><td class="arr">→</td><td><input class="bC" data-i="2"></td><td class="arr">→</td><td><input class="bL" data-i="2"></td></tr>
+        </table>
+        <div class="row" style="margin-top:8px"><button class="btn gold sm" id="bFill">💡 Жишээ</button><button class="btn ghost sm" id="bClear">↺ Цэвэрлэх</button>
+          <span class="muted" style="font-size:16px">Жишээ: <i>хурц өргөс → зүү → «Мянган зүүтэй»</i></span></div>
+      </div>
+      <div>
+        <div class="prev"><div class="riddle" id="bPrev"></div><div class="whatis">…… Тэр юу вэ?</div></div>
+        <ul class="chk" id="bChk"></ul>
+        <div class="row"><button class="btn sm" id="bSave">💾 Хадгалах</button><span class="feedback" id="bFb" style="margin:0;font-size:17px"></span></div>
+        <div class="gal" id="bGal"></div>
+      </div>
+    </div>
+    <div class="lockbar" id="st4"><span class="pad">🔒</span><span class="lbtxt">Шалгуур хангасан оньсогоо хадгалбал түгжээ нээгдэнэ.</span></div>
+  </div>
+</section>
+
+<!-- 7. Авдар -->
+<section class="slide" data-name="Эрдэнэсийн авдар нээгдлээ" data-min="2"
+  data-notes="Цуглуулсан 5 үсгийг дарааллаар нь оруулна: Э-Р-Д-Э-М → «ЭРДЭМ».|Авдар нээгдэхэд: «Жинхэнэ эрдэнэс бол эрдэм ухаан» гэж дүгнэнэ. Хэлц үгийг сурах бичигт хэлний үнэт эрдэнэс гэж нэрлэсэн (х.126).|Түгжээ бүрээс юу сурснаа 1 өгүүлбэрээр хэлүүлнэ.">
+  <div class="inner">
+    <span class="tag">🏆 Эцсийн өрөө</span>
+    <h2>🗝️ Эрдэнэсийн авдрын кодыг оруул!</h2>
+    <div class="chestwrap">
+      <svg class="chest" id="chest" viewBox="0 0 400 300">
+        <defs>
+          <radialGradient id="gg"><stop offset="0" stop-color="#fff6c8"/><stop offset=".5" stop-color="#f3d27a" stop-opacity=".7"/><stop offset="1" stop-color="#f3d27a" stop-opacity="0"/></radialGradient>
+          <linearGradient id="wood" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#c8414a"/><stop offset="1" stop-color="#721219"/></linearGradient>
+          <linearGradient id="goldg" x1="0" x2="1"><stop offset="0" stop-color="#9a711c"/><stop offset=".5" stop-color="#f3d27a"/><stop offset="1" stop-color="#9a711c"/></linearGradient>
+        </defs>
+        <g id="glow">
+          <g id="rays" fill="#f3d27a" opacity=".35">
+            <path d="M200 140 L170 0 L230 0Z"/><path d="M200 140 L300 10 L330 50Z"/><path d="M200 140 L100 10 L70 50Z"/><path d="M200 140 L370 120 L360 170Z"/><path d="M200 140 L30 120 L40 170Z"/>
+          </g>
+          <circle cx="200" cy="140" r="130" fill="url(#gg)"/>
+        </g>
+        <text class="loot" x="150" y="105" font-size="34">💎</text>
+        <text class="loot" x="196" y="85" font-size="38">📜</text>
+        <text class="loot" x="240" y="108" font-size="32">👑</text>
+        <!-- body -->
+        <rect x="70" y="150" width="260" height="120" rx="8" fill="url(#wood)" stroke="#9a711c" stroke-width="4"/>
+        <rect x="70" y="150" width="260" height="16" fill="url(#goldg)"/>
+        <rect x="70" y="252" width="260" height="18" rx="4" fill="url(#goldg)"/>
+        <rect x="100" y="150" width="14" height="120" fill="url(#goldg)"/><rect x="286" y="150" width="14" height="120" fill="url(#goldg)"/>
+        <use href="#ulzii" x="128" y="172" width="70" height="70" color="#f3d27a"/>
+        <use href="#ulzii" x="202" y="172" width="70" height="70" color="#f3d27a"/>
+        <rect x="182" y="160" width="36" height="46" rx="6" fill="url(#goldg)" stroke="#721219" stroke-width="2"/>
+        <circle cx="200" cy="177" r="6" fill="#2a1a10"/><rect x="197" y="178" width="6" height="16" fill="#2a1a10"/>
+        <!-- lid -->
+        <g id="lid">
+          <path d="M70 150 V110 Q70 70 200 66 Q330 70 330 110 V150 Z" fill="url(#wood)" stroke="#9a711c" stroke-width="4"/>
+          <path d="M100 150 V96 Q103 80 114 78 V150Z" fill="url(#goldg)"/><path d="M300 150 V96 Q297 80 286 78 V150Z" fill="url(#goldg)"/>
+          <path d="M70 140 H330 V150 H70Z" fill="url(#goldg)"/>
+          <path d="M140 118 Q200 92 260 118" fill="none" stroke="#f3d27a" stroke-width="3" stroke-dasharray="6 6"/>
+        </g>
+      </svg>
+      <div class="card" style="text-align:center">
+        <h3>Цуглуулсан нууц үсгүүд</h3>
+        <div class="hintl" id="hintl" style="color:var(--redd)"></div>
+        <div class="code" id="code">
+          <input maxlength="1" aria-label="1-р үсэг"><input maxlength="1" aria-label="2-р үсэг"><input maxlength="1" aria-label="3-р үсэг"><input maxlength="1" aria-label="4-р үсэг"><input maxlength="1" aria-label="5-р үсэг">
+        </div>
+        <button class="btn gold" id="codeBtn">🗝️ Авдрыг нээх</button>
+        <div class="feedback" id="codeFb"></div>
+        <div class="prize" id="prize">
+          <div class="def" style="font-size:19px;text-align:left">🎉 Баяр хүргэе! Та бүхэн оньсогын далд утгыг тайлж, хэлц үгийн нууцыг олж, өөрсдөө оньсого зохиолоо. Хааны хамгийн үнэтэй эрдэнэс бол — <b>ЭРДЭМ</b>!</div>
+          <div class="def t" style="font-size:17px;text-align:left">💎 «Хэлц үг бол тухайн хэлнийхээ үнэт эрдэнэс юм.» <span class="muted">(х.126)</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. Эргэцүүлэл -->
+<section class="slide" data-name="Эргэцүүлэл ба гэрийн даалгавар" data-min="3"
+  data-notes="Өгүүлбэрийг ангиараа гүйцээж бичнэ — бичсэн нь хадгалагдана.|Өөрийн үнэлгээ: х.127-ийн 4-р даалгаврын шалгуур (Маш сайн / Сайн / Дунд) — гараа өргүүлж ангийн дунджаар тэмдэглэж болно.|Гэрийн даалгавар: х.124, 1-р даалгавар — зарааны тухай эхийг уншиж оньсого зохиох; х.128, 1-р даалгавар — «Хоохондой мэргэн» эхийн оньсогуудыг таах; х.128, 2-р даалгаврын 2) — хэлц үгээр өгүүлбэр зохиох.">
+  <div class="inner">
+    <span class="tag">🌟 Эргэцүүлэл</span>
+    <h2>💭 Бид юу сурав?</h2>
+    <div class="grid2" style="grid-template-columns:1.1fr .9fr;align-items:start">
+      <div class="card frames">
+        <div class="fr">Оньсогын далд утгыг таахдаа би <div contenteditable="true" data-k="mn_dald_f1" data-ph="мөр бүрийн шинжийг бодож…"></div></div>
+        <div class="fr">Оньсого зохиохдоо хамгийн чухал нь <div contenteditable="true" data-k="mn_dald_f2" data-ph="хариуг далд байлгах…"></div></div>
+        <div class="fr">Хэлц үг гэдэг нь <div contenteditable="true" data-k="mn_dald_f3" data-ph="хэд хэдэн үг нийлж…"></div></div>
+        <div class="fr">Миний дуртай хэлц үг: <div contenteditable="true" data-k="mn_dald_f4" data-ph="туулай зүрхтэй…"></div></div>
+      </div>
+      <div class="card">
+        <h3>📊 Өөрийгөө үнэлье <span class="muted" style="font-size:14px">(х.127)</span></h3>
+        <table class="sa" id="sa">
+          <tr><th style="text-align:left">Шалгуур</th><th>Маш сайн</th><th>Сайн</th><th>Дунд</th></tr>
+        </table>
+        <div class="def r" style="font-size:17px;margin-top:8px">🏠 <b>Гэрийн даалгавар:</b> х.124, 1-р даалгавар — зарааны оньсого зохиох; х.128, 1 — «Хоохондой мэргэн»-ий оньсогыг таах; х.128, 2.2 — хэлцээр өгүүлбэр зохиох.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<nav class="nav">
+  <button class="btn" id="prevBtn">◀ Өмнөх</button>
+  <div class="dots" id="dots"></div>
+  <button class="btn" id="nextBtn">Дараах ▶</button>
+</nav>
+<div class="tnotes" id="tnotes"><h4>📝 Багшид зориулсан зөвлөмж</h4><ul id="tnList"></ul></div>
+<div class="toast" id="toast"></div>
+<canvas id="confetti"></canvas>
+
+<script>
+/* ---------- Helpers ---------- */
+const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
+const $=id=>document.getElementById(id);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+function bump(el){el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake')}
+let toastT=null;
+function toast(msg){const t=$('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2600)}
+
+/* ---------- Locks ---------- */
+const LETTERS=['Э','Р','Д','Э','М'];
+const LOCKS=[false,false,false,false,false];
+function renderLocks(){
+  LOCKS.forEach((o,i)=>{
+    const c=$('lk'+i);c.classList.toggle('open',o);c.innerHTML=(o?'🔓':'🔒')+'<b>'+(o?LETTERS[i]:i+1)+'</b>';
+    const m=document.querySelectorAll('#mlocks .mlock')[i];m.classList.toggle('open',o);m.querySelector('.ic').textContent=o?'🔓':'🔒';m.querySelector('.lt').textContent=o?LETTERS[i]:'?';
+    const st=$('st'+i);st.classList.toggle('open',o);st.querySelector('.pad').textContent=o?'🔓':'🔒';
+    if(o)st.querySelector('.lbtxt').innerHTML='Түгжээ нээгдлээ! Нууц үсэг: <b>'+LETTERS[i]+'</b> — дараагийн өрөө рүү ▶';
+  });
+  $('hintl').innerHTML=LOCKS.map((o,i)=>'<span>'+(o?LETTERS[i]:'?')+'</span>').join('');
+}
+function unlock(i){if(LOCKS[i])return;LOCKS[i]=true;renderLocks();const c=$('lk'+i);c.classList.remove('pop');void c.offsetWidth;c.classList.add('pop');
+  toast('🔓 Түгжээ '+(i+1)+' нээгдлээ! Нууц үсэг: '+LETTERS[i]);confetti(110)}
+for(let i=0;i<5;i++)$('lk'+i).addEventListener('dblclick',()=>{if(LOCKS[i]){LOCKS[i]=false;renderLocks()}else unlock(i)});
+document.querySelectorAll('#mlocks .mlock').forEach(m=>m.onclick=()=>go(+m.dataset.go));
+
+/* ---------- Slides ---------- */
+const slides=[...document.querySelectorAll('.slide')];const dots=$('dots');let cur=0;
+slides.forEach((s,i)=>{const b=document.createElement('button');b.className='dot';b.textContent=i+1;b.title=s.dataset.name;b.onclick=()=>go(i);dots.appendChild(b)});
+function go(i){
+  cur=Math.max(0,Math.min(slides.length-1,i));
+  slides.forEach((s,j)=>s.classList.toggle('active',j===cur));
+  [...dots.children].forEach((d,j)=>{d.classList.toggle('on',j===cur);d.classList.toggle('done',j<cur)});
+  const s=slides[cur];
+  $('stageName').textContent=s.dataset.name;$('roomNo').textContent='Өрөө '+(cur+1)+'/'+slides.length;
+  $('tnList').innerHTML='<li>⏱ Зөвлөмж хугацаа: ≈'+s.dataset.min+' мин</li>'+s.dataset.notes.split('|').map(t=>'<li>'+t+'</li>').join('');
+  $('prevBtn').disabled=cur===0;$('nextBtn').textContent=cur===slides.length-1?'🏁 Төгсгөл':'Дараах ▶';
+}
+$('prevBtn').onclick=()=>go(cur-1);$('nextBtn').onclick=()=>go(cur+1);
+document.addEventListener('keydown',e=>{
+  const t=e.target;if(t.isContentEditable||t.tagName==='INPUT'||t.tagName==='TEXTAREA')return;
+  if(e.key==='ArrowRight'||e.key==='PageDown')go(cur+1);
+  else if(e.key==='ArrowLeft'||e.key==='PageUp')go(cur-1);
+  else if(e.key==='f'||e.key==='F')toggleFS();
+  else if(e.key==='n'||e.key==='N')toggleNotes();
+});
+function toggleFS(){if(!document.fullscreenElement){if(document.documentElement.requestFullscreen)document.documentElement.requestFullscreen()}else if(document.exitFullscreen)document.exitFullscreen()}
+function toggleNotes(){$('tnotes').classList.toggle('show')}
+$('fsBtn').onclick=toggleFS;$('notesBtn').onclick=toggleNotes;
+
+/* ---------- Timer ---------- */
+let remain=40*60,running=false,tick=null;
+function drawT(){const a=Math.abs(remain),m=Math.floor(a/60),s=a%60;$('tval').textContent=(remain<0?'+':'')+m+':'+String(s).padStart(2,'0');$('timer').className='timer'+(remain<0?' over':remain<=300?' warn':'')}
+$('tPlay').onclick=()=>{running=!running;$('tPlay').textContent=running?'⏸':'▶';if(running)tick=setInterval(()=>{remain--;drawT()},1000);else clearInterval(tick)};
+$('timer').ondblclick=()=>{remain=40*60;drawT()};drawT();
+
+/* ---------- Editable frames ---------- */
+document.querySelectorAll('[data-k]').forEach(e=>{const k=e.dataset.k;e.textContent=store.get(k)||'';e.addEventListener('input',()=>store.set(k,e.innerText.trim()?e.innerText:''))});
+
+/* ================= Mission: Нар ================= */
+(()=>{const seen=new Set();document.querySelectorAll('#sun .wd').forEach((b,i)=>b.onclick=()=>{if(seen.has(i))return;seen.add(i);b.classList.add('on');
+  const li=document.createElement('li');li.innerHTML=b.dataset.r;$('sunOut').appendChild(li);
+  if(seen.size===4){$('sunFb').innerHTML='☀️ Хариу: <b>НАР</b>! Нарыг өнгө, хэлбэр, орон байр, үйл хөдлөлөөр нь нуужээ.';confetti(50)}else $('sunFb').textContent='👍 Дахиад '+(4-seen.size)+' үг үлдлээ.'})})();
+
+/* ================= Lock 1: riddles ================= */
+const R1=[
+ {src:'(х.120, №2)',lines:['Усан хоёр дэнлүүтэй','Ургаа хоёр модтой','Дөрвөн сайхан тулгууртай','Дүүрэн сайхан хөхүүртэй'],
+  clue:['👁 Нүд — дэнлүү шиг гялалздаг','🐂 Эвэр — мод шиг ургадаг','🦵 Дөрвөн хөл — тулгуур шиг биеэ даадаг','🥛 Дэлэн — сүүгээр дүүрэн'],
+  opts:[['🐐','Ямаа'],['🐄','Үхэр'],['🐎','Морь'],['🐑','Хонь']],a:1},
+ {src:'(х.120, №3)',lines:['Ган дөрвөн туурайтай','Газар товчлох хурдтай','Товор товор алхаатай','Түмэн сайхан дагуултай'],
+  clue:['⚙️ Туурай — ган шиг хатуу','💨 Маш хурдан — хол газрыг ойртуулна','🔊 Туурайн чимээ — товор товор','👥 Сүрэг адуу, олон хүн дагаж хайрладаг'],
+  opts:[['🐫','Тэмээ'],['🐄','Үхэр'],['🐐','Ямаа'],['🐎','Морь']],a:3},
+ {src:'(х.120, №5)',lines:['Мантгар махан биетэй','Махир модон хавтастай','Магнаг цагаан зүстэй','Мяндсан зөөлөн үстэй'],
+  clue:['🍖 Тарган, бүдүүн биетэй','🌀 Мушгирсан хатуу эвэртэй','⚪ Цагаан өнгөтэй — магнаг шиг','🧶 Зөөлөн ноостой'],
+  opts:[['🐑','Хонь'],['🐐','Ямаа'],['🐫','Тэмээ'],['🐄','Үхэр']],a:0},
+ {src:'(х.121)',lines:['Үүлэн хар нөмрөгтэй','Үзүүр салаа сүүлтэй','Өвс шавран гэртэй','Өт хорхой идэштэй'],
+  clue:['🖤 Хар өдтэй — хар нөмрөг шиг','✂️ Сүүл нь салаа — хайч шиг','🏠 Үүрээ шавар, өвсөөр барьдаг','🐛 Шавж, хорхойгоор хооллодог'],
+  opts:[['🐦','Хэрээ'],['🐦','Хараацай'],['🐦','Тоншуул'],['🐦','Тагтаа']],a:1,
+  why:{0:'Хэрээ хар өнгөтэй, гэхдээ салаа сүүлгүй, шавар үүр хийдэггүй.',2:'Тоншуул модонд нүх ухаж үүрлэдэг, шавар үүр хийдэггүй.',3:'Тагтаа салаа сүүлгүй, өт хорхой голдуу иддэггүй.'}}
+];
+const S1=R1.map(()=>({solved:false,wrong:new Set(),clues:new Set()}));let r1=0;
+function r1Render(){
+  const R=R1[r1],S=S1[r1];
+  $('r1tabs').innerHTML=R1.map((_,i)=>`<button class="${i===r1?'on':''} ${S1[i].solved&&S1[i].clues.size>=2?'done':''}" data-i="${i}">Оньсого ${i+1}</button>`).join('');
+  $('r1tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{r1=+b.dataset.i;$('r1fb').textContent='';r1Render()});
+  $('r1src').textContent=R.src;
+  $('r1lines').innerHTML=R.lines.map((l,i)=>`<button class="rline ${S.clues.has(i)?'got':''}" data-i="${i}">${l}${S.clues.has(i)?'<small>'+R.clue[i]+'</small>':''}</button>`).join('');
+  $('r1lines').querySelectorAll('.rline').forEach(b=>b.onclick=()=>{
+    if(!S.solved){$('r1fb').className='feedback no';$('r1fb').textContent='👇 Эхлээд хариугаа сонгоорой, дараа нь нотол.';return}
+    S.clues.add(+b.dataset.i);r1Render();r1Check()});
+  $('r1opts').innerHTML=R.opts.map(([e,n],i)=>`<button class="opt ${S.solved&&i===R.a?'ok':''} ${S.wrong.has(i)?'no':''}" data-i="${i}"><span class="e">${e}</span>${n}</button>`).join('');
+  $('r1opts').querySelectorAll('.opt').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(S.solved)return;
+    if(i===R.a){S.solved=true;$('r1fb').className='feedback ok';$('r1fb').textContent='🎉 Зөв! Одоо оньсогын мөр бүр дээр дарж нотол (дор хаяж 2).';confetti(30)}
+    else{S.wrong.add(i);$('r1fb').className='feedback no';$('r1fb').textContent='🤔 '+((R.why&&R.why[i])||(R.opts[i][1]+' — бүх мөр тохирох уу? Мөр бүрийг дахин бодоорой.'))}
+    r1Render()});
+  $('r1prog').innerHTML=S1.map((s,i)=>`<span class="${s.solved&&s.clues.size>=2?'ok':''}">${i+1}: ${s.solved?'✓':'?'} · нотолгоо ${s.clues.size}/4</span>`).join('');
+}
+function r1Check(){if(S1[r1].clues.size===2){$('r1fb').className='feedback ok';$('r1fb').textContent='✅ Батлагдлаа! '+(r1<3?'Дараагийн оньсого руу.':'')}
+  if(S1.every(s=>s.solved&&s.clues.size>=2))unlock(0)}
+r1Render();
+
+/* ================= Lock 2: comparison tables ================= */
+const T2=[
+ {src:'(х.121)',riddle:['Эрээн дээсийг','Эвхэж болдоггүй.'],rows:['Эрээн, олон өнгөтэй','Урт, нарийн хэлбэртэй (дээс шиг)','Эвхэж, гараар барьж болохгүй'],
+  cols:[['🐍','Могой'],['🌈','Солонго']],ans:[[1,1],[1,1],[0,1]],a:1,
+  expl:'🌈 Солонго! «Эрээн» — солонгын долоон өнгө. Урт нарийн хэлбэрээр нь дээстэй адилтгажээ. Гараар барьж болдоггүй тул эвхэж болохгүй.'},
+ {src:'(х.119)',riddle:['Хар торгон дээлээ','Хайч хүргэлгүй өмсдөг','Хатуу болд сүхээ','Хатаалгүй барьдаг'],rows:['Хар өнгөтэй (хар торгон дээл)','Мод цоолох хурц хошуутай (болд сүх)','Модыг тоншиж нүхэлдэг'],
+  cols:[['🐦','Хэрээ'],['🌲','Тоншуул']],ans:[[1,1],[0,1],[0,1]],a:1,
+  expl:'🌲 Хар тоншуул! Арьс өдийг нь дээлтэй, хурц хошууг нь сүхтэй адилтгажээ. Мод цоолдог тул хошууг нь «болд сүх» гэжээ.'}
+];
+const S2=T2.map(T=>({cells:T.rows.map(()=>T.cols.map(()=>0)),tableOk:false,solved:false}));let t2=0;
+const SYM=['','+','−'];
+function t2Render(){
+  const T=T2[t2],S=S2[t2];
+  $('t2tabs').innerHTML=T2.map((_,i)=>`<button class="${i===t2?'on':''} ${S2[i].solved?'done':''}" data-i="${i}">Хүснэгт ${i+1}</button>`).join('');
+  $('t2tabs').querySelectorAll('button').forEach(b=>b.onclick=()=>{t2=+b.dataset.i;$('t2fb').textContent='';t2Render()});
+  $('t2src').textContent=T.src;$('t2riddle').innerHTML=T.riddle.join('<br>');
+  $('t2table').innerHTML='<tr><th>Шинж</th>'+T.cols.map(([e,n])=>`<th>${e} ${n}</th>`).join('')+'</tr>'+
+    T.rows.map((r,ri)=>'<tr><td>'+r+'</td>'+T.cols.map((_,ci)=>{const v=S.cells[ri][ci];return `<td class="c"><button class="cell ${v===1?'p':v===2?'m':''} ${S.tableOk?'good':''}" data-r="${ri}" data-c="${ci}">${SYM[v]}</button></td>`}).join('')+'</tr>').join('');
+  $('t2table').querySelectorAll('.cell').forEach(b=>b.onclick=()=>{if(S.tableOk)return;const r=+b.dataset.r,c=+b.dataset.c;S.cells[r][c]=(S.cells[r][c]+1)%3;t2Render()});
+  $('t2pick').innerHTML=S.tableOk?'<b>Хариу аль нь вэ?</b> '+T.cols.map(([e,n],i)=>`<button class="btn ${S.solved&&i===T.a?'teal':'gold'} sm" data-i="${i}">${e} ${n}</button>`).join(''):'';
+  $('t2pick').querySelectorAll('button').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;
+    if(i===T.a){S.solved=true;$('t2fb').className='feedback ok';$('t2fb').textContent=T.expl;confetti(40);t2Render();if(S2.every(s=>s.solved))unlock(1)}
+    else{$('t2fb').className='feedback no';$('t2fb').textContent='🤔 Хүснэгтээ хар: бүх шинж нь «+» байгаа нь аль вэ?'}});
+}
+$('t2check').onclick=()=>{const T=T2[t2],S=S2[t2];let bad=0,empty=0;
+  T.rows.forEach((_,r)=>T.cols.forEach((_,c)=>{const v=S.cells[r][c];if(!v)empty++;else if((v===1)!==(T.ans[r][c]===1))bad++}));
+  if(empty){$('t2fb').className='feedback no';$('t2fb').textContent='✏️ Бүх нүдийг бөглөөрэй ('+empty+' хоосон).';return}
+  if(bad){$('t2fb').className='feedback no';$('t2fb').textContent='🤔 '+bad+' нүд буруу байна. Улаанаар тодорсныг дахин бодоорой.';
+    $('t2table').querySelectorAll('.cell').forEach(b=>{const r=+b.dataset.r,c=+b.dataset.c;if((S.cells[r][c]===1)!==(T.ans[r][c]===1))b.classList.add('bad')});return}
+  S.tableOk=true;$('t2fb').className='feedback ok';$('t2fb').textContent='✅ Хүснэгт зөв! Одоо хариугаа сонго.';t2Render()};
+t2Render();
+
+/* ================= Lock 3: idiom matching ================= */
+const IDI=[['Туулай зүрхтэй','аймхай'],['Алга дарам','жижиг'],['Ус балгасан юм шиг','дуугүй'],['Хойш суух','залхуурах'],['Дөргүй бух шиг','зөрүүд'],['Ам хөдөлгөх','идэх'],['Тэмээ ямаа хоёр шиг','тэс өөр'],['Яст мэлхий шиг','удаан']];
+const ORD=[4,7,1,5,0,6,3,2];let m3Sel=null;const m3Done=new Set();
+function m3Render(){
+  $('m3L').innerHTML=IDI.map(([w],i)=>`<button class="mi ${m3Done.has(i)?'done':''} ${m3Sel===i?'sel':''}" data-i="${i}"><span class="n">${m3Done.has(i)?'✓':i+1}</span>${w}</button>`).join('');
+  $('m3R').innerHTML=ORD.map(i=>`<button class="mi ${m3Done.has(i)?'done':''}" data-i="${i}"><span class="n">${m3Done.has(i)?i+1:'?'}</span>${IDI[i][1]}</button>`).join('');
+  $('m3L').querySelectorAll('.mi').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(m3Done.has(i))return;m3Sel=i;m3Render()});
+  $('m3R').querySelectorAll('.mi').forEach(b=>b.onclick=()=>{const i=+b.dataset.i;if(m3Done.has(i))return;
+    if(m3Sel===null){$('m3fb').className='feedback no';$('m3fb').textContent='👈 Эхлээд зүүн талаас хэлц үгээ сонгоорой.';return}
+    if(i===m3Sel){m3Done.add(i);$('m3fb').className='feedback ok';$('m3fb').textContent='🎉 «'+IDI[i][0]+'» = '+IDI[i][1]+'  ('+m3Done.size+'/8)';m3Sel=null;m3Render();confetti(20);if(m3Done.size===8)unlock(2)}
+    else{$('m3fb').className='feedback no';$('m3fb').textContent='🤔 «'+IDI[m3Sel][0]+'» нь «'+IDI[i][1]+'» гэсэн утгатай юу? Дахин бодоорой.';bump(b)}});
+}
+m3Render();
+document.querySelectorAll('.flip').forEach(f=>f.onclick=()=>f.classList.toggle('on'));
+
+/* ================= Lock 4: idiom in context ================= */
+const S4=[
+ {s:'Цаг хугацаа өнгөрч хүү нь ___.',o:['ам хөдөлгөжээ','эрийн цээнд хүрчээ','хойш суужээ'],a:1,n:'Мөн болно: эр өсөх, гар нь ганзганд, хөл нь дөрөөнд хүрэх (х.127)'},
+ {s:'Эмгэн, өвгөн хоёрын ___ байсан ч хүүгээ явуулжээ.',o:['сэтгэл шимширч','магнай хагарч','алга дарам'],a:0,n:'Мөн болно: сэтгэл өвдөж, сэтгэл сэмэрч (х.127)'},
+ {s:'Эцэг эх нь хүүгээ хараад ___.',o:['амаа барив','ус балгасан юм шиг болов','хөл газар хүрэхгүй баярлав'],a:2,n:'Мөн болно: нар нь гарав, хөл хөөрцөг болов (х.127)'},
+ {s:'Харанхуй өрөөнд орохоос айдаг ___ дүү минь.',o:['дөргүй бух шиг','туулай зүрхтэй','тэмээ ямаа хоёр шиг'],a:1,n:'Туулай зүрхтэй = аймхай (х.128)'},
+ {s:'Багш асуухад Болд ___ дуугүй суув.',o:['нүдний цэцгий мэт','алга дарам','ус балгасан юм шиг'],a:2,n:'Ус балгасан юм шиг = дуугүй (х.128)'},
+ {s:'Эмээ ач охиноо ___ мэт хайрладаг.',o:['нүдний цэцгий','харвасан сум','яст мэлхий'],a:0,n:'Нүдний цэцгий мэт = эрхэмлэн нандигнах (х.126)'}
+];
+const D4=new Set();
+(()=>{S4.forEach((q,qi)=>{const d=document.createElement('div');d.className='sent';
+  d.innerHTML=`<div class="s">${qi+1}. ${q.s.replace('___','<span class="blank">&nbsp;?&nbsp;</span>')}</div><div class="os">${q.o.map((o,i)=>`<button data-i="${i}">${o}</button>`).join('')}</div><div class="nt"></div>`;
+  d.querySelectorAll('.os button').forEach(b=>b.onclick=()=>{if(D4.has(qi))return;const i=+b.dataset.i;
+    if(i===q.a){D4.add(qi);b.classList.add('ok');d.classList.add('ok');d.querySelector('.blank').textContent=q.o[i];d.querySelector('.nt').textContent='✅ '+q.n;confetti(25);if(D4.size===S4.length)unlock(3)}
+    else{b.classList.add('no');bump(d)}});
+  $('s4').appendChild(d)})})();
+
+/* ================= Lock 5: riddle builder ================= */
+const PRE={
+  zaraa:{a:'Зараа',r:[['хурц өргөстэй','зүү','Мянган зүүтэй'],['бөөрөнхий биетэй','бөмбөг','Бөмбөг шиг биетэй'],['бут сөөгөнд үүрлэдэг','гэр','Бутан дор гэртэй']]},
+  tuulai:{a:'Туулай',r:[['дэлдэн чихтэй','дэгээ','Дэлдэн хоёр дэгээтэй'],['дэрс бутанд амьдардаг','гэр','Дэрсэн гэртэй'],['хурдан','—','Бушуу түргэн явдалтай']]},
+  zairmag:{a:'Зайрмаг',r:[['хүйтэн, хөлдүү','мөс','Мөс шиг биетэй'],['амттай','чихэр','Чихэр шиг амттай'],['хүүхдүүд дуртай','—','Хүүхэд бидний дуртай']]},
+  own:{a:'',r:[['өнгө, хэлбэр…','төстэй зүйл…','Оньсогын мөр…'],['хаана амьдардаг…','төстэй зүйл…','Оньсогын мөр…'],['юу хийдэг…','төстэй зүйл…','Оньсогын мөр…']]}
+};
+let bObj='zaraa';
+const bF=[...document.querySelectorAll('.bF')],bC=[...document.querySelectorAll('.bC')],bL=[...document.querySelectorAll('.bL')];
+function bPlaceholders(){const P=PRE[bObj];$('bAns').placeholder=P.a||'Таалгах зүйл';P.r.forEach((r,i)=>{bF[i].placeholder=r[0];bC[i].placeholder=r[1];bL[i].placeholder=r[2]})}
+function bSaveDraft(){store.set('mn_dald_draft',JSON.stringify({o:bObj,a:$('bAns').value,f:bF.map(x=>x.value),c:bC.map(x=>x.value),l:bL.map(x=>x.value)}))}
+function bState(){
+  const ans=$('bAns').value.trim(),lines=bL.map(x=>x.value.trim());
+  const all=lines.join(' ').toLowerCase();
+  const stem=ans.toLowerCase().slice(0,Math.max(3,ans.length-2));
+  const filled=lines.filter(Boolean).length;
+  const hidden=ans.length>0&&filled>0&&!all.includes(stem);
+  const cmp=bC.filter((c,i)=>{const w=c.value.trim().toLowerCase();return w&&w!=='—'&&lines[i]&&lines[i].toLowerCase().includes(w.slice(0,Math.max(2,Math.min(4,w.length-1))))}).length;
+  return{ans,lines,filled,hidden,cmp,checks:[[ans.length>0,'① Таалгах зүйлээ бичсэн'],[filled>=3,'④ 3 мөр шүлэглэж бичсэн ('+filled+'/3)'],[cmp>=2,'③ Шинжийг төстэй зүйлээр орлуулсан ('+cmp+'/2)'],[hidden,'🙈 Хариу үг оньсогод ороогүй — далд байна']]};
+}
+function bRender(){const S=bState();
+  $('bPrev').innerHTML=S.lines.some(Boolean)?S.lines.filter(Boolean).map(esc).join('<br>'):'<span style="opacity:.6">Оньсого энд бүрдэнэ…</span>';
+  $('bChk').innerHTML=S.checks.map(([ok,t])=>`<li class="${ok?'ok':''}">${ok?'✅':'☐'} ${t}</li>`).join('');
+}
+function bGallery(){let G=[];try{G=JSON.parse(store.get('mn_dald_riddles')||'[]')}catch(e){G=[]}
+  $('bGal').innerHTML=G.length?G.map((g,i)=>`<div class="gi"><span class="tx">${i+1}. ${g.l.map(esc).join(' / ')} <span class="an">→ ${esc(g.a)}</span></span><button class="rv" data-i="${i}">👀</button><button class="dl" data-i="${i}">✕</button></div>`).join(''):'<div class="muted" style="font-size:16px">Хадгалсан оньсого энд харагдана — найзууд таана!</div>';
+  $('bGal').querySelectorAll('.rv').forEach(b=>b.onclick=()=>b.parentElement.classList.toggle('show'));
+  $('bGal').querySelectorAll('.dl').forEach(b=>b.onclick=()=>{G.splice(+b.dataset.i,1);store.set('mn_dald_riddles',JSON.stringify(G));bGallery()});
+  return G}
+document.querySelectorAll('#objs button').forEach(b=>b.onclick=()=>{bObj=b.dataset.o;document.querySelectorAll('#objs button').forEach(x=>x.classList.toggle('on',x===b));bPlaceholders();bSaveDraft()});
+[$('bAns'),...bF,...bC,...bL].forEach(x=>x.addEventListener('input',()=>{bRender();bSaveDraft()}));
+$('bFill').onclick=()=>{const P=PRE[bObj];if(bObj==='own'){$('bFb').className='feedback no';$('bFb').textContent='✏️ Өөрийн зүйлийн жишээг та бичнэ!';return}
+  $('bAns').value=P.a;P.r.forEach((r,i)=>{bF[i].value=r[0];bC[i].value=r[1];bL[i].value=r[2]});bRender();bSaveDraft()};
+$('bClear').onclick=()=>{[$('bAns'),...bF,...bC,...bL].forEach(x=>x.value='');$('bFb').textContent='';bRender();bSaveDraft()};
+$('bSave').onclick=()=>{const S=bState();
+  if(!S.checks[0][0]||!S.checks[1][0]){$('bFb').className='feedback no';$('bFb').textContent='✏️ Хариу ба 3 мөрөө бичээрэй.';bump($('bChk'));return}
+  if(!S.hidden){$('bFb').className='feedback no';$('bFb').textContent='🙈 Хариу үг харагдаж байна — нууцлаарай!';bump($('bChk'));return}
+  const G=bGallery();G.push({a:S.ans,l:S.lines});store.set('mn_dald_riddles',JSON.stringify(G));bGallery();
+  $('bFb').className='feedback ok';$('bFb').textContent='💾 Хадгаллаа! Найзууддаа таалгаарай.';confetti(40);unlock(4)};
+(()=>{let D=null;try{D=JSON.parse(store.get('mn_dald_draft')||'null')}catch(e){D=null}
+  if(D&&PRE[D.o]){bObj=D.o;document.querySelectorAll('#objs button').forEach(x=>x.classList.toggle('on',x.dataset.o===bObj));$('bAns').value=D.a||'';
+    ['f','c','l'].forEach((k,j)=>{const arr=[bF,bC,bL][j];(D[k]||[]).forEach((v,i)=>{if(arr[i])arr[i].value=v||''})})}
+  bPlaceholders();bRender();bGallery()})();
+
+/* ================= Chest ================= */
+const codeIns=[...document.querySelectorAll('#code input')];
+codeIns.forEach((inp,i)=>{inp.addEventListener('input',()=>{inp.value=inp.value.toUpperCase().slice(-1);if(inp.value&&i<4)codeIns[i+1].focus()});
+  inp.addEventListener('keydown',e=>{if(e.key==='Backspace'&&!inp.value&&i>0)codeIns[i-1].focus();if(e.key==='Enter')$('codeBtn').click()})});
+$('codeBtn').onclick=()=>{const v=codeIns.map(x=>x.value.trim().toUpperCase()).join('');
+  if(v===LETTERS.join('')){$('code').classList.add('ok');$('chest').classList.add('open');$('prize').classList.add('show');$('codeFb').className='feedback ok';$('codeFb').textContent='🔓 Авдар нээгдлээ!';
+    confetti(220);setTimeout(()=>confetti(160),900)}
+  else{$('codeFb').className='feedback no';$('codeFb').textContent=v.length<5?'✏️ 5 үсгээ бүгдийг оруулаарай.':'🔒 Код буруу байна. Түгжээнүүдийн дарааллыг шалгаарай!';bump($('code'))}};
+
+/* ================= Self assessment ================= */
+(()=>{const CR=['Эх, өгүүлбэрээс хэлц үгийг ялган таньдаг','Хэлц үгийн далд утгыг ойлгодог','Хэлц үгийн далд утгыг тайлбарлаж чаддаг','Хэлц үгээр өгүүлбэр зохиож чаддаг'];
+  let SA={};try{SA=JSON.parse(store.get('mn_dald_sa')||'{}')}catch(e){SA={}}
+  const tb=$('sa');CR.forEach((c,ri)=>{const tr=document.createElement('tr');tr.innerHTML='<td>'+c+'</td>'+['⭐','👍','🙂'].map((e,ci)=>`<td class="c"><button data-r="${ri}" data-c="${ci}" class="${SA[ri]===ci?'on':''}">${e}</button></td>`).join('');tb.appendChild(tr)});
+  tb.querySelectorAll('button').forEach(b=>b.onclick=()=>{const r=+b.dataset.r,c=+b.dataset.c;SA[r]=c;store.set('mn_dald_sa',JSON.stringify(SA));
+    tb.querySelectorAll(`button[data-r="${r}"]`).forEach(x=>x.classList.toggle('on',+x.dataset.c===c));if(c===0)confetti(20)})})();
+
+/* ================= Confetti (gold coins & gems) ================= */
+const cf=$('confetti'),cfx=cf.getContext('2d');let parts=[],cRun=false;
+function confetti(n){cf.width=innerWidth;cf.height=innerHeight;const cols=['#f3d27a','#d9a93a','#c8414a','#1f7774','#fff6c8'];
+  for(let i=0;i<n;i++)parts.push({x:innerWidth/2+rnd(-180,180),y:innerHeight*.42,vx:rnd(-8,8),vy:-rnd(5,18),s:rnd(6,12),c:cols[i%5],r:rnd(0,6),coin:i%5<2,life:130});
+  if(!cRun){cRun=true;requestAnimationFrame(cStep)}}
+function cStep(){cfx.clearRect(0,0,cf.width,cf.height);parts.forEach(p=>{p.vy+=.4;p.x+=p.vx;p.y+=p.vy;p.r+=.15;p.life--;cfx.save();cfx.translate(p.x,p.y);cfx.rotate(p.r);
+  if(p.coin){cfx.scale(Math.abs(Math.cos(p.r)),1);cfx.beginPath();cfx.arc(0,0,p.s,0,7);cfx.fillStyle=p.c;cfx.fill();cfx.lineWidth=2;cfx.strokeStyle='#9a711c';cfx.stroke()}
+  else{cfx.fillStyle=p.c;cfx.beginPath();cfx.moveTo(0,-p.s);cfx.lineTo(p.s*.7,0);cfx.lineTo(0,p.s);cfx.lineTo(-p.s*.7,0);cfx.closePath();cfx.fill()}
+  cfx.restore()});
+  parts=parts.filter(p=>p.life>0&&p.y<cf.height+20);if(parts.length)requestAnimationFrame(cStep);else{cRun=false;cfx.clearRect(0,0,cf.width,cf.height)}}
+
+renderLocks();
+go(0);
+</script>
+</body>
+</html>
